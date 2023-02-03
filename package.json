@@ -1,0 +1,23 @@
+{
+  "name": "cost-of-transactions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tableland/evm": "^4.0.0",
+    "@tableland/sdk": "^4.0.0-pre.6",
+    "dotenv": "^16.0.3",
+    "ethereum-block-by-date": "^1.4.6",
+    "ethers": "^5.7.2",
+    "moment": "^2.29.4",
+    "sqlite3": "^5.1.4",
+    "web3": "^1.8.2",
+    "yargs": "^17.6.2"
+  }
+}
