@@ -84,7 +84,14 @@ async function fetchHandler(argv) {
       // Get transaction details
       const receipt = await web3.eth.getTransactionReceipt(event.transactionHash);
       // Push transaction details to processed events
-      processedEvents.push([event.transactionHash, chain.chainName, event.event, event.blockNumber, receipt.effectiveGasPrice, receipt.gasUsed]);
+      processedEvents.push([
+        event.transactionHash, 
+        chain.chainName, 
+        event.event, 
+        event.blockNumber, 
+        receipt.effectiveGasPrice || parseInt(receipt.l1GasPrice, 16), 
+        receipt.gasUsed
+      ]);
     }
 
     return processedEvents;
@@ -134,11 +141,22 @@ async function fetchHandler(argv) {
 
 // Logs the average cost of a method specified by `method` argument (CreateTable or RunSQL)
 async function readHandler(argv) {
-  const { chain, method } = argv;
+  const { method } = argv;
+
+  const web3 = new Web3(new Web3.providers.HttpProvider(argv.providerUrl));
+
+  const chain = helpers.getChainInfo(await web3.eth.getChainId());
+
+  const dater = new EthDater(web3);
+
+  const dateFormat = "MM-DD-YYYY";
+  const date = moment(argv.from, dateFormat).toDate();
+  let startBlock = await dater.getDate(date);
+
+  const dateEnd = moment(argv.to, dateFormat).toDate();
+  let endBlock = await dater.getDate(dateEnd);
 
   // TODO: Pass in dates to retreive from
-  let startBlock = 0;
-  let endBlock = 1000000000;
 
   // Find the average cost of a transaction to the method specified
   db.all(`
@@ -146,7 +164,8 @@ async function readHandler(argv) {
     FROM CostOfWrites
     WHERE block BETWEEN ? AND ?
     AND statementType = ?
-  `, [startBlock, endBlock, method], (error, rows) => {
+    AND network = ?
+  `, [startBlock.block, endBlock.block, method, chain.chainName], (error, rows) => {
     if (error) {
       console.error(error);
       return;
